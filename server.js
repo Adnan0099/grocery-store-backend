@@ -22,16 +22,13 @@ app.use(express.json());
 // Static uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Database
-connectDB();
-
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 
-// Home / health check
+// Home route
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -39,15 +36,17 @@ app.get('/', (req, res) => {
   });
 });
 
-// Vercel serverless export
-module.exports = app;
+// Connect MongoDB
+connectDB();
 
-// Local development
+// Local development only
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log('Server running on port ' + PORT);
   });
 }
 
+// Vercel
+module.exports = app;
