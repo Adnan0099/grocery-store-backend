@@ -1,4 +1,4 @@
-```js
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -50,4 +50,3 @@ if (require.main === module) {
     console.log(`Server running on port ${PORT}`);
   });
 }
-```
