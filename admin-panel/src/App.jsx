@@ -6,7 +6,6 @@ import Products from './pages/Products';
 import Categories from './pages/Categories';
 import Orders from './pages/Orders';
 import Customers from './pages/Customers';
-import Login from './pages/Login';
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
@@ -45,37 +44,9 @@ function AdminLayout() {
 }
 
 function App() {
-  const token = localStorage.getItem('adminToken');
-
   return (
     <BrowserRouter>
-      <Routes>
-
-        {/* Login Page */}
-        <Route
-          path="/login"
-          element={
-            token ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Login />
-            )
-          }
-        />
-
-        {/* Admin Panel */}
-        <Route
-          path="/*"
-          element={
-            token ? (
-              <AdminLayout />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
-
-      </Routes>
+      <AdminLayout />
     </BrowserRouter>
   );
 }
