@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
 import Dashboard from './pages/Dashboard';
@@ -5,9 +6,11 @@ import Products from './pages/Products';
 import Categories from './pages/Categories';
 import Orders from './pages/Orders';
 import Customers from './pages/Customers';
+import Login from './pages/Login';
 
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+
 import './App.css';
 
 function AdminLayout() {
@@ -24,14 +27,14 @@ function AdminLayout() {
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/products" element={<Products />} />
- 
+            <Route path="/categories" element={<Categories />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/customers" element={<Customers />} />
+
             <Route
               path="*"
               element={<Navigate to="/dashboard" replace />}
             />
-            <Route path="/categories" element={<Categories />}/>
           </Routes>
         </main>
 
@@ -44,18 +47,35 @@ function AdminLayout() {
 function App() {
   const token = localStorage.getItem('adminToken');
 
-  if (!token) {
-    return (
-      <div className="login-required">
-        <h2>Admin Login Required</h2>
-        <p>Please login to access the dashboard.</p>
-      </div>
-    );
-  }
-
   return (
     <BrowserRouter>
-      <AdminLayout />
+      <Routes>
+
+        {/* Login Page */}
+        <Route
+          path="/login"
+          element={
+            token ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Login />
+            )
+          }
+        />
+
+        {/* Admin Panel */}
+        <Route
+          path="/*"
+          element={
+            token ? (
+              <AdminLayout />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+      </Routes>
     </BrowserRouter>
   );
 }
