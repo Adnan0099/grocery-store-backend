@@ -13,78 +13,47 @@ function Signup() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
+ const handleRegister = async () => {
+  try {
+    console.log("1. Register started");
 
-    setError('');
-    setSuccess('');
-
-    if (!name || !email || !password || !confirmPassword) {
-      setError('Please fill all fields');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const response = await fetch(
-        'https://grocery-store-backend-tqu4.vercel.app/api/admin/auth/register',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            password,
-            role: 'admin',
-          }),
-        }
-      );
-
-     const text = await response.text();
-
-let data = {};
-
-try {
-  data = text ? JSON.parse(text) : {};
-} catch (err) {
-  console.log('Server response:', text);
-}
-
-if (!response.ok) {
-  throw new Error(
-    data.message || `Request failed: ${response.status}`
-  );
-}
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Signup failed');
+    const response = await fetch(
+      "https://grocery-store-backend-tqu4.vercel.app/api/admin/auth/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: "Admin",
+          email: "admin@gmail.com",
+          password: "123456",
+        }),
       }
+    );
 
-      setSuccess('Account created successfully!');
+    console.log("2. Status:", response.status);
 
-      setTimeout(() => {
-        navigate('/login');
-      }, 1000);
+    const text = await response.text();
 
-    } catch (error) {
-      setError(error.message || 'Signup failed');
-    } finally {
-      setLoading(false);
+    console.log("3. Raw response:", text);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${text}`);
     }
-  };
+
+    const data = JSON.parse(text);
+
+    console.log("4. Register response:", data);
+
+    if (data.success) {
+      console.log("Admin registered successfully");
+      console.log("Token:", data.token);
+    }
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+  }
+};
 
   return (
     <div className="auth-page">
@@ -108,7 +77,7 @@ if (!response.ok) {
           </div>
         )}
 
-        <form onSubmit={handleSignup}>
+        <form onSubmit={handleRegister}>
 
           <div className="form-group">
             <label>Name</label>
