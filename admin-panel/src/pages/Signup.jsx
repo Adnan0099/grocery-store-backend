@@ -53,7 +53,21 @@ function Signup() {
         }
       );
 
-      const data = await response.json();
+     const text = await response.text();
+
+let data = {};
+
+try {
+  data = text ? JSON.parse(text) : {};
+} catch (err) {
+  console.log('Server response:', text);
+}
+
+if (!response.ok) {
+  throw new Error(
+    data.message || `Request failed: ${response.status}`
+  );
+}
 
       if (!response.ok) {
         throw new Error(data.message || 'Signup failed');
