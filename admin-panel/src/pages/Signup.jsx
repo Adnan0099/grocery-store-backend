@@ -38,7 +38,7 @@ function Signup() {
       setLoading(true);
 
       const response = await fetch(
-        'https://grocery-store-backend-tqu4.vercel.app/api/auth/register',
+        'https://grocery-store-backend-tqu4.vercel.app/api/admin/auth/register',
         {
           method: 'POST',
           headers: {
