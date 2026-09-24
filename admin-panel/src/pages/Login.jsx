@@ -36,20 +36,20 @@ function Login() {
 
     console.log("4. Raw API response:", text);
 
-    if (!text) {
-      throw new Error(
-        `Backend ne empty response diya. HTTP Status: ${response.status}`
-      );
-    }
+    // if (!text) {
+    //   throw new Error(
+    //     `Backend ne empty response diya. HTTP Status: ${response.status}`
+    //   );
+    // }
 
-    let data;
+    // let data;
 
-    try {
-      data = JSON.parse(text);
-    } catch (jsonError) {
-      console.error("JSON Parse Error:", jsonError);
-      throw new Error("Backend ne valid JSON return nahi kiya.");
-    }
+    // try {
+    //   data = JSON.parse(text);
+    // } catch (jsonError) {
+    //   console.error("JSON Parse Error:", jsonError);
+    //   throw new Error("Backend ne valid JSON return nahi kiya.");
+    // }
 
     console.log("5. Parsed data:", data);
 
@@ -59,24 +59,24 @@ function Login() {
       );
     }
 
-    if (data.success) {
-      console.log("6. Login successful");
-      console.log("Token:", data.token);
+    // if (data.success) {
+    //   console.log("6. Login successful");
+    //   console.log("Token:", data.token);
 
-      // TOKEN SAVE
-      localStorage.setItem("adminToken", data.token);
+    //   // TOKEN SAVE
+    //   localStorage.setItem("adminToken", data.token);
 
-      // USER SAVE
-      localStorage.setItem(
-        "adminUser",
-        JSON.stringify(data.user)
-      );
+    //   // USER SAVE
+    //   localStorage.setItem(
+    //     "adminUser",
+    //     JSON.stringify(data.user)
+    //   );
 
-      console.log("7. Token saved:", localStorage.getItem("adminToken"));
+    //   console.log("7. Token saved:", localStorage.getItem("adminToken"));
 
-      // Admin panel open
-       navigate('/dashboard');
-    }
+    //   // Admin panel open
+    //    navigate('/dashboard');
+    // }
   } catch (error) {
     console.error("LOGIN ERROR:", error);
   }
