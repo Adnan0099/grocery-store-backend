@@ -6,13 +6,13 @@ const path = require('path');
 
 dotenv.config();
 
-const connectDB = require('./config/db');
+const connectDB = require('../config/db');
 
-const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes');
-const categoryRoutes = require('./routes/categoryRoutes');
-const orderRoutes = require('./routes/orderRoutes');
-const adminAuthRoutes = require('./routes/adminAuthRoutes');
+const authRoutes = require('../routes/authRoutes');
+const productRoutes = require('../routes/productRoutes');
+const categoryRoutes = require('../routes/categoryRoutes');
+const orderRoutes = require('../routes/orderRoutes');
+const adminAuthRoutes = require('../routes/adminAuthRoutes');
 const app = express();
 
 // Middleware
