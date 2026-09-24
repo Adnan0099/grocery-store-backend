@@ -88,6 +88,18 @@ router.post('/register', async (req, res) => {
 });
 
 
+router.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Admin Auth API is working',
+    endpoints: {
+      register: 'POST /api/admin/auth/register',
+      login: 'POST /api/admin/auth/login'
+    }
+  });
+});
+
+
 // ======================================
 // ADMIN LOGIN
 // ======================================
