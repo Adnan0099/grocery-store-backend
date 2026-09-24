@@ -75,7 +75,7 @@ function Login() {
       console.log("7. Token saved:", localStorage.getItem("adminToken"));
 
       // Admin panel open
-      // navigate("/admin");
+       navigate('/dashboard');
     }
   } catch (error) {
     console.error("LOGIN ERROR:", error);

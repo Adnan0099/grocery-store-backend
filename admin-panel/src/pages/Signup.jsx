@@ -25,9 +25,9 @@ function Signup() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: "Admin",
-          email: "admin@gmail.com",
-          password: "123456",
+          name:"",
+          email:"" ,
+          password: "",
         }),
       }
     );
