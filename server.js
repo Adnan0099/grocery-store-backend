@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -13,41 +12,143 @@ const productRoutes = require('./routes/productRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const adminAuthRoutes = require('./routes/adminAuthRoutes');
+
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// ==========================================
+// DATABASE
+// ==========================================
 
-// Static uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+connectDB();
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin/auth', adminAuthRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/orders', orderRoutes);
+// ==========================================
+// CORS
+// ==========================================
 
-// Home route
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization'
+    ]
+  })
+);
+
+// ==========================================
+// BODY PARSER
+// ==========================================
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// ==========================================
+// STATIC UPLOADS
+// ==========================================
+
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, 'uploads'))
+);
+
+// ==========================================
+// API TEST
+// ==========================================
+
 app.get('/', (req, res) => {
-  res.json({
+  return res.status(200).json({
     success: true,
     message: 'Grocery Store API is running 🚀',
+    api: {
+      auth: '/api/auth',
+      adminAuth: '/api/admin/auth',
+      products: '/api/products',
+      categories: '/api/categories',
+      orders: '/api/orders'
+    }
   });
 });
 
-// Connect MongoDB
-connectDB();
+// ==========================================
+// HEALTH CHECK
+// ==========================================
 
-// Local development only
+app.get('/api/health', (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: 'Server is healthy 🚀'
+  });
+});
+
+// ==========================================
+// AUTH ROUTES
+// ==========================================
+
+app.use('/api/auth', authRoutes);
+
+// ==========================================
+// ADMIN AUTH ROUTES
+// ==========================================
+
+app.use('/api/admin/auth', adminAuthRoutes);
+
+// ==========================================
+// PRODUCT ROUTES
+// ==========================================
+
+app.use('/api/products', productRoutes);
+
+// ==========================================
+// CATEGORY ROUTES
+// ==========================================
+
+app.use('/api/categories', categoryRoutes);
+
+// ==========================================
+// ORDER ROUTES
+// ==========================================
+
+app.use('/api/orders', orderRoutes);
+
+// ==========================================
+// API 404
+// ==========================================
+
+app.use('/api/*', (req, res) => {
+  return res.status(404).json({
+    success: false,
+    message: `API route not found: ${req.method} ${req.originalUrl}`
+  });
+});
+
+// ==========================================
+// GENERAL ERROR HANDLER
+// ==========================================
+
+app.use((err, req, res, next) => {
+  console.error('SERVER ERROR:', err);
+
+  return res.status(500).json({
+    success: false,
+    message: 'Internal server error.'
+  });
+});
+
+// ==========================================
+// LOCAL DEVELOPMENT
+// ==========================================
+
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log('Server running on port ' + PORT);
+    console.log(`Server running on port ${PORT}`);
   });
 }
 
-// Vercel
+// ==========================================
+// VERCEL
+// ==========================================
+
 module.exports = app;

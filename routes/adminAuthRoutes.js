@@ -7,7 +7,23 @@ const router = express.Router();
 
 
 // ======================================
-// ADMIN SIGNUP
+// ADMIN AUTH TEST
+// ======================================
+
+router.get('/', (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: 'Admin Auth API is working 🚀',
+    endpoints: {
+      register: 'POST /api/admin/auth/register',
+      login: 'POST /api/admin/auth/login'
+    }
+  });
+});
+
+
+// ======================================
+// ADMIN REGISTER
 // ======================================
 
 router.post('/register', async (req, res) => {
@@ -16,7 +32,7 @@ router.post('/register', async (req, res) => {
       name,
       email,
       password
-    } = req.body;
+    } = req.body || {};
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -29,6 +45,15 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 6 characters.'
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is missing.');
+
+      return res.status(500).json({
+        success: false,
+        message: 'JWT_SECRET is not configured on server.'
       });
     }
 
@@ -56,8 +81,8 @@ router.post('/register', async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: admin._id,
-        role: admin.role
+        id: admin._id.toString(),
+        role: 'admin'
       },
       process.env.JWT_SECRET,
       {
@@ -65,7 +90,7 @@ router.post('/register', async (req, res) => {
       }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Admin account created successfully.',
       token,
@@ -78,25 +103,13 @@ router.post('/register', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Admin register error:', error);
+    console.error('ADMIN REGISTER ERROR:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error during admin registration.'
     });
   }
-});
-
-
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'Admin Auth API is working',
-    endpoints: {
-      register: 'POST /api/admin/auth/register',
-      login: 'POST /api/admin/auth/login'
-    }
-  });
 });
 
 
@@ -109,12 +122,21 @@ router.post('/login', async (req, res) => {
     const {
       email,
       password
-    } = req.body;
+    } = req.body || {};
 
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: 'Email and password are required.'
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is missing.');
+
+      return res.status(500).json({
+        success: false,
+        message: 'JWT_SECRET is not configured on server.'
       });
     }
 
@@ -131,7 +153,6 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Only admin can login to admin panel
     if (admin.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -150,8 +171,8 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       {
-        id: admin._id,
-        role: admin.role
+        id: admin._id.toString(),
+        role: 'admin'
       },
       process.env.JWT_SECRET,
       {
@@ -159,7 +180,7 @@ router.post('/login', async (req, res) => {
       }
     );
 
-    res.json({
+    return res.status(200).json({
       success: true,
       message: 'Admin login successful.',
       token,
@@ -172,9 +193,9 @@ router.post('/login', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Admin login error:', error);
+    console.error('ADMIN LOGIN ERROR:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error during admin login.'
     });

@@ -6,9 +6,12 @@ const protect = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Test route
+// ==========================================
+// TEST / AUTH API
+// ==========================================
+
 router.get('/', (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
     message: 'Auth API is working 🚀',
     endpoints: {
@@ -19,11 +22,21 @@ router.get('/', (req, res) => {
   });
 });
 
-// Register
+// ==========================================
+// REGISTER
+// ==========================================
+
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, phone, address } = req.body;
+    const {
+      name,
+      email,
+      password,
+      phone = '',
+      address = ''
+    } = req.body || {};
 
+    // Validation
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -40,6 +53,7 @@ router.post('/register', async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
+    // Check existing user
     const existingUser = await User.findOne({
       email: normalizedEmail
     });
@@ -51,18 +65,29 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    // Create user
     const user = await User.create({
       name: name.trim(),
       email: normalizedEmail,
       password,
-      phone: phone || '',
-      address: address || '',
+      phone: phone ? phone.trim() : '',
+      address: address ? address.trim() : '',
       role: 'customer'
     });
 
+    // JWT
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is missing in environment variables.');
+
+      return res.status(500).json({
+        success: false,
+        message: 'JWT configuration is missing on server.'
+      });
+    }
+
     const token = jwt.sign(
       {
-        id: user._id,
+        id: user._id.toString(),
         role: user.role
       },
       process.env.JWT_SECRET,
@@ -71,7 +96,7 @@ router.post('/register', async (req, res) => {
       }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Account created successfully.',
       token,
@@ -86,19 +111,29 @@ router.post('/register', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Register error:', error);
+    console.error('REGISTER ERROR:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: 'Server error during registration.'
+      message: 'Server error during registration.',
+      error:
+        process.env.NODE_ENV === 'development'
+          ? error.message
+          : undefined
     });
   }
 });
 
-// Login
+// ==========================================
+// LOGIN
+// ==========================================
+
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const {
+      email,
+      password
+    } = req.body || {};
 
     if (!email || !password) {
       return res.status(400).json({
@@ -107,8 +142,10 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     const user = await User.findOne({
-      email: email.trim().toLowerCase()
+      email: normalizedEmail
     });
 
     if (!user) {
@@ -127,9 +164,18 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is missing in environment variables.');
+
+      return res.status(500).json({
+        success: false,
+        message: 'JWT configuration is missing on server.'
+      });
+    }
+
     const token = jwt.sign(
       {
-        id: user._id,
+        id: user._id.toString(),
         role: user.role
       },
       process.env.JWT_SECRET,
@@ -138,7 +184,7 @@ router.post('/login', async (req, res) => {
       }
     );
 
-    res.json({
+    return res.status(200).json({
       success: true,
       message: 'Login successful.',
       token,
@@ -153,21 +199,37 @@ router.post('/login', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('LOGIN ERROR:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: 'Server error during login.'
+      message: 'Server error during login.',
+      error:
+        process.env.NODE_ENV === 'development'
+          ? error.message
+          : undefined
     });
   }
 });
 
-// Current user
+// ==========================================
+// CURRENT USER
+// ==========================================
+
 router.get('/me', protect, async (req, res) => {
-  res.json({
-    success: true,
-    user: req.user
-  });
+  try {
+    return res.status(200).json({
+      success: true,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('ME ERROR:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to get current user.'
+    });
+  }
 });
 
 module.exports = router;
