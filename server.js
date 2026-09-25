@@ -15,15 +15,62 @@ const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
 
-app.use(cors());
+// ======================================
+// CORS
+// ======================================
+
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+    ],
+  })
+);
+
+// ======================================
+// BODY PARSER
+// ======================================
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// ======================================
+// UPLOADS
+// ======================================
 
-// ===============================
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, 'uploads'))
+);
+
+// ======================================
+// ROOT TEST
+// ======================================
+
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Grocery Store API is running 🚀',
+  });
+});
+
+// ======================================
+// HEALTH TEST
+// ======================================
+
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Backend is working 🚀',
+  });
+});
+
+// ======================================
 // API ROUTES
-// ===============================
+// ======================================
 
 app.use('/api/auth', authRoutes);
 
@@ -35,38 +82,33 @@ app.use('/api/categories', categoryRoutes);
 
 app.use('/api/orders', orderRoutes);
 
-// ===============================
-// TEST
-// ===============================
-
-app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Grocery Store API is running 🚀'
-  });
-});
-
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Backend is working 🚀'
-  });
-});
-
-// ===============================
+// ======================================
 // 404
-// ===============================
+// ======================================
 
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: `Route not found: ${req.method} ${req.originalUrl}`
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
   });
 });
 
-// ===============================
-// LOCAL
-// ===============================
+// ======================================
+// ERROR HANDLER
+// ======================================
+
+app.use((err, req, res, next) => {
+  console.error('SERVER ERROR:', err);
+
+  res.status(500).json({
+    success: false,
+    message: err.message || 'Internal server error',
+  });
+});
+
+// ======================================
+// LOCAL SERVER
+// ======================================
 
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
@@ -74,13 +116,23 @@ if (require.main === module) {
   connectDB()
     .then(() => {
       app.listen(PORT, '0.0.0.0', () => {
-        console.log(`Server running on port ${PORT}`);
+        console.log(
+          `Server running on port ${PORT}`
+        );
       });
     })
     .catch((error) => {
-      console.error('Database connection failed:', error);
+      console.error(
+        'Database connection failed:',
+        error
+      );
+
       process.exit(1);
     });
 }
+
+// ======================================
+// VERCEL
+// ======================================
 
 module.exports = app;
