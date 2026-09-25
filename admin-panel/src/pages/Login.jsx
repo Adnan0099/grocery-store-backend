@@ -58,25 +58,25 @@ function Login() {
     //     data.message || `Login failed. Status: ${response.status}`
     //   );
     // }
+      console.log("6. Login successful commit");
+    if (data.success) {
+      console.log("6. Login successful");
+      console.log("Token:", data.token);
 
-    // if (data.success) {
-    //   console.log("6. Login successful");
-    //   console.log("Token:", data.token);
+      // TOKEN SAVE
+      localStorage.setItem("adminToken", data.token);
 
-    //   // TOKEN SAVE
-    //   localStorage.setItem("adminToken", data.token);
+      // USER SAVE
+      localStorage.setItem(
+        "adminUser",
+        JSON.stringify(data.user)
+      );
 
-    //   // USER SAVE
-    //   localStorage.setItem(
-    //     "adminUser",
-    //     JSON.stringify(data.user)
-    //   );
+      console.log("7. Token saved:", localStorage.getItem("adminToken"));
 
-    //   console.log("7. Token saved:", localStorage.getItem("adminToken"));
-
-    //   // Admin panel open
-    //    navigate('/dashboard');
-    // }
+      // Admin panel open
+       navigate('/dashboard');
+    }
   } catch (error) {
     console.error("LOGIN ERROR:", error);
   }
