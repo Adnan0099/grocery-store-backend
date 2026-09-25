@@ -51,13 +51,13 @@ function Login() {
     //   throw new Error("Backend ne valid JSON return nahi kiya.");
     // }
 
-    console.log("5. Parsed data:", data);
+    // console.log("5. Parsed data:", data);
 
-    if (!response.ok) {
-      throw new Error(
-        data.message || `Login failed. Status: ${response.status}`
-      );
-    }
+    // if (!response.ok) {
+    //   throw new Error(
+    //     data.message || `Login failed. Status: ${response.status}`
+    //   );
+    // }
 
     // if (data.success) {
     //   console.log("6. Login successful");
