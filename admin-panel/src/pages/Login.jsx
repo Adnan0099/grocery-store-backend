@@ -33,7 +33,7 @@ function Login() {
 
     try {
       const response = await fetch(
-        'https://grocery-store-backend-tqu4.vercel.app/api/admin/auth/login',
+        'https://grocery-store-backend-cyan.vercel.app/api/admin/auth/login',
         {
           method: 'POST',
 
