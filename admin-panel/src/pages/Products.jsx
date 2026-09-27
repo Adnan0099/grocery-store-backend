@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const API_URL = 'http://localhost:5000/api/products';
+const API_URL = 'https://grocery-store-backend-cyan.vercel.app/api/products';
 const SERVER_URL = 'http://localhost:5000';
 
 const emptyForm = {

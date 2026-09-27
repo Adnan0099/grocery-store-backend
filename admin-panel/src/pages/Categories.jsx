@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const API_URL =
-  'http://localhost:5000/api/categories';
+  'https://grocery-store-backend-cyan.vercel.app/api/categories';
 
 const SERVER_URL =
   'http://localhost:5000';

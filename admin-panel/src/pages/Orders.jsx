@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
-const API_URL = 'http://localhost:5000/api/orders';
+const API_URL = 'https://grocery-store-backend-cyan.vercel.app/api/orders';
 
 const STATUS_OPTIONS = [
   'Pending',
