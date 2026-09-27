@@ -23,10 +23,7 @@ app.use(
   cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: [
-      'Content-Type',
-      'Authorization',
-    ],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -47,11 +44,38 @@ app.use(
 );
 
 // ======================================
+// DATABASE CONNECTION
+// ======================================
+
+let dbConnected = false;
+
+app.use(async (req, res, next) => {
+  try {
+    if (!dbConnected) {
+      await connectDB();
+      dbConnected = true;
+
+      console.log('MongoDB connected successfully');
+    }
+
+    next();
+  } catch (error) {
+    console.error('Database connection failed:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: error.message,
+    });
+  }
+});
+
+// ======================================
 // ROOT TEST
 // ======================================
 
 app.get('/', (req, res) => {
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: 'Grocery Store API is running 🚀',
   });
@@ -62,7 +86,7 @@ app.get('/', (req, res) => {
 // ======================================
 
 app.get('/api/health', (req, res) => {
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: 'Backend is working 🚀',
   });
@@ -87,7 +111,7 @@ app.use('/api/orders', orderRoutes);
 // ======================================
 
 app.use((req, res) => {
-  res.status(404).json({
+  return res.status(404).json({
     success: false,
     message: `Route not found: ${req.method} ${req.originalUrl}`,
   });
@@ -100,7 +124,7 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   console.error('SERVER ERROR:', err);
 
-  res.status(500).json({
+  return res.status(500).json({
     success: false,
     message: err.message || 'Internal server error',
   });
@@ -113,22 +137,9 @@ app.use((err, req, res, next) => {
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
 
-  connectDB()
-    .then(() => {
-      app.listen(PORT, '0.0.0.0', () => {
-        console.log(
-          `Server running on port ${PORT}`
-        );
-      });
-    })
-    .catch((error) => {
-      console.error(
-        'Database connection failed:',
-        error
-      );
-
-      process.exit(1);
-    });
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }
 
 // ======================================
