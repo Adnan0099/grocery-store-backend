@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const streamifier = require('streamifier');
+const cloudinary = require('cloudinary').v2;
 
 const Category = require('../models/Category');
 const authMiddleware = require('../middleware/authMiddleware');
@@ -10,65 +10,38 @@ const router = express.Router();
 
 
 // ========================================
-// UPLOAD DIRECTORY
+// CLOUDINARY CONFIG
 // ========================================
 
-const uploadDir = path.join(
-  process.cwd(),
-  'uploads',
-  'categories'
-);
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, {
-    recursive: true,
-  });
-}
-
-
-// ========================================
-// MULTER STORAGE
-// ========================================
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-
-  filename: (req, file, cb) => {
-    const extension =
-      path.extname(file.originalname);
-
-    const filename =
-      `${Date.now()}-${Math.round(
-        Math.random() * 1e9
-      )}${extension}`;
-
-    cb(null, filename);
-  },
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+
+// ========================================
+// MULTER MEMORY STORAGE
+// IMPORTANT:
+// DO NOT SAVE FILE TO VERCEL DISK
+// ========================================
+
+const storage = multer.memoryStorage();
 
 
 // ========================================
 // FILE FILTER
 // ========================================
 
-const fileFilter = (
-  req,
-  file,
-  cb
-) => {
+const fileFilter = (req, file, cb) => {
+
   const allowedTypes = [
     'image/jpeg',
     'image/jpg',
     'image/png',
   ];
 
-  if (
-    allowedTypes.includes(
-      file.mimetype
-    )
-  ) {
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
     cb(
@@ -91,12 +64,47 @@ const upload = multer({
 
 
 // ========================================
+// UPLOAD IMAGE TO CLOUDINARY
+// ========================================
+
+const uploadToCloudinary = (fileBuffer) => {
+
+  return new Promise((resolve, reject) => {
+
+    const uploadStream =
+      cloudinary.uploader.upload_stream(
+        {
+          folder: 'grocery-store/categories',
+          resource_type: 'image',
+        },
+
+        (error, result) => {
+
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+
+        }
+      );
+
+    streamifier
+      .createReadStream(fileBuffer)
+      .pipe(uploadStream);
+  });
+};
+
+
+// ========================================
 // GET ALL CATEGORIES
 // PUBLIC
 // ========================================
 
 router.get('/', async (req, res) => {
+
   try {
+
     const categories =
       await Category.find()
         .sort({
@@ -110,6 +118,7 @@ router.get('/', async (req, res) => {
     });
 
   } catch (error) {
+
     console.error(
       'Get Categories Error:',
       error
@@ -129,13 +138,16 @@ router.get('/', async (req, res) => {
 // ========================================
 
 router.get('/:id', async (req, res) => {
+
   try {
+
     const category =
       await Category.findById(
         req.params.id
       );
 
     if (!category) {
+
       return res.status(404).json({
         success: false,
         message: 'Category not found',
@@ -148,6 +160,7 @@ router.get('/:id', async (req, res) => {
     });
 
   } catch (error) {
+
     console.error(error);
 
     res.status(500).json({
@@ -168,16 +181,20 @@ router.post(
   '/',
   authMiddleware,
   upload.single('image'),
+
   async (req, res) => {
+
     try {
 
       if (req.user.role !== 'admin') {
+
         return res.status(403).json({
           success: false,
           message:
             'Admin access required',
         });
       }
+
 
       const {
         name,
@@ -186,6 +203,7 @@ router.post(
 
 
       if (!name || !name.trim()) {
+
         return res.status(400).json({
           success: false,
           message:
@@ -201,6 +219,7 @@ router.post(
 
 
       if (existingCategory) {
+
         return res.status(409).json({
           success: false,
           message:
@@ -209,26 +228,51 @@ router.post(
       }
 
 
-      const image =
-        req.file
-          ? `/uploads/categories/${req.file.filename}`
-          : '';
+      // ==================================
+      // UPLOAD IMAGE
+      // ==================================
 
+      let image = '';
+
+
+      if (req.file) {
+
+        const uploadedImage =
+          await uploadToCloudinary(
+            req.file.buffer
+          );
+
+        image =
+          uploadedImage.secure_url;
+      }
+
+
+      // ==================================
+      // CREATE CATEGORY
+      // ==================================
 
       const category =
         await Category.create({
+
           name: name.trim(),
+
           description:
             description || '',
+
           image,
+
         });
 
 
       res.status(201).json({
+
         success: true,
+
         message:
           'Category added successfully',
+
         category,
+
       });
 
     } catch (error) {
@@ -239,10 +283,13 @@ router.post(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           error.message ||
           'Failed to add category',
+
       });
     }
   }
@@ -258,10 +305,13 @@ router.put(
   '/:id',
   authMiddleware,
   upload.single('image'),
+
   async (req, res) => {
+
     try {
 
       if (req.user.role !== 'admin') {
+
         return res.status(403).json({
           success: false,
           message:
@@ -277,6 +327,7 @@ router.put(
 
 
       if (!category) {
+
         return res.status(404).json({
           success: false,
           message:
@@ -293,6 +344,7 @@ router.put(
 
 
       if (!name || !name.trim()) {
+
         return res.status(400).json({
           success: false,
           message:
@@ -303,14 +355,18 @@ router.put(
 
       const duplicate =
         await Category.findOne({
+
           name: name.trim(),
+
           _id: {
             $ne: req.params.id,
           },
+
         });
 
 
       if (duplicate) {
+
         return res.status(409).json({
           success: false,
           message:
@@ -326,19 +382,27 @@ router.put(
         description || '';
 
 
-      if (
-        isActive !== undefined
-      ) {
+      if (isActive !== undefined) {
+
         category.isActive =
           isActive === true ||
           isActive === 'true';
       }
 
 
-      // New image
+      // ==================================
+      // NEW IMAGE
+      // ==================================
+
       if (req.file) {
+
+        const uploadedImage =
+          await uploadToCloudinary(
+            req.file.buffer
+          );
+
         category.image =
-          `/uploads/categories/${req.file.filename}`;
+          uploadedImage.secure_url;
       }
 
 
@@ -346,10 +410,14 @@ router.put(
 
 
       res.json({
+
         success: true,
+
         message:
           'Category updated successfully',
+
         category,
+
       });
 
     } catch (error) {
@@ -360,10 +428,13 @@ router.put(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           error.message ||
           'Failed to update category',
+
       });
     }
   }
@@ -378,10 +449,13 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
+
   async (req, res) => {
+
     try {
 
       if (req.user.role !== 'admin') {
+
         return res.status(403).json({
           success: false,
           message:
@@ -397,6 +471,7 @@ router.delete(
 
 
       if (!category) {
+
         return res.status(404).json({
           success: false,
           message:
@@ -411,9 +486,12 @@ router.delete(
 
 
       res.json({
+
         success: true,
+
         message:
           'Category deleted successfully',
+
       });
 
     } catch (error) {
@@ -424,9 +502,12 @@ router.delete(
       );
 
       res.status(500).json({
+
         success: false,
+
         message:
           'Failed to delete category',
+
       });
     }
   }
