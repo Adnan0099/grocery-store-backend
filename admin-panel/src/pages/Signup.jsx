@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -16,23 +17,15 @@ function Signup() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    console.log('==============================');
-    console.log('REGISTER STARTED');
-    console.log('Name:', name);
-    console.log('Email:', email);
-    console.log('Password:', password ? '******' : '');
-    console.log('Confirm Password:', confirmPassword ? '******' : '');
-    console.log('==============================');
-
     setError('');
     setSuccess('');
+
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
 
     // =========================
     // VALIDATION
     // =========================
-
-    const cleanName = name.trim();
-    const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanName) {
       setError('Please enter your name');
@@ -64,31 +57,21 @@ function Signup() {
       return;
     }
 
-    // =========================
-    // FINAL DATA CHECK
-    // =========================
-
     const registerData = {
       name: cleanName,
       email: cleanEmail,
       password: password,
     };
 
-    console.log('FINAL REGISTER DATA:', {
-      name: registerData.name,
-      email: registerData.email,
-      password: registerData.password ? '******' : '',
-    });
-
     setLoading(true);
 
     try {
       // =========================
-      // API REQUEST
+      // ADMIN REGISTER API
       // =========================
 
       const response = await fetch(
-        'https://grocery-store-backend-tqu4.vercel.app/api/admin/auth/register',
+        'https://grocery-store-backend-cyan.vercel.app/api/admin/auth/register',
         {
           method: 'POST',
 
@@ -102,11 +85,6 @@ function Signup() {
       );
 
       console.log('HTTP STATUS:', response.status);
-      console.log('HTTP OK:', response.ok);
-
-      // =========================
-      // READ RAW RESPONSE
-      // =========================
 
       const text = await response.text();
 
@@ -117,10 +95,6 @@ function Signup() {
           `Server returned an empty response. HTTP ${response.status}`
         );
       }
-
-      // =========================
-      // JSON PARSE
-      // =========================
 
       let data;
 
@@ -134,7 +108,7 @@ function Signup() {
         );
       }
 
-      console.log('PARSED SERVER RESPONSE:', data);
+      console.log('SERVER RESPONSE:', data);
 
       // =========================
       // SERVER ERROR
@@ -155,20 +129,15 @@ function Signup() {
       if (data.success) {
         console.log('ADMIN REGISTERED SUCCESSFULLY');
 
-        // Save token if backend sends one
         if (data.token) {
           localStorage.setItem('token', data.token);
-          console.log('TOKEN SAVED');
         }
 
-        // Save admin user if backend sends one
         if (data.user) {
           localStorage.setItem(
             'adminUser',
             JSON.stringify(data.user)
           );
-
-          console.log('ADMIN USER SAVED');
         }
 
         setSuccess(
@@ -195,9 +164,7 @@ function Signup() {
       }
 
     } catch (error) {
-      console.error('==============================');
       console.error('REGISTER ERROR:', error);
-      console.error('==============================');
 
       setError(
         error.message ||
@@ -242,76 +209,58 @@ function Signup() {
 
           {/* NAME */}
           <div className="form-group">
-
             <label>Name</label>
 
             <input
               type="text"
               placeholder="Enter your name"
               value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
+              onChange={(e) => setName(e.target.value)}
               disabled={loading}
               autoComplete="name"
             />
-
           </div>
 
           {/* EMAIL */}
           <div className="form-group">
-
             <label>Email</label>
 
             <input
               type="email"
               placeholder="Enter your email"
               value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
               autoComplete="email"
             />
-
           </div>
 
           {/* PASSWORD */}
           <div className="form-group">
-
             <label>Password</label>
 
             <input
               type="password"
               placeholder="Enter password"
               value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-              }}
+              onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
               autoComplete="new-password"
             />
-
           </div>
 
           {/* CONFIRM PASSWORD */}
           <div className="form-group">
-
-            <label>
-              Confirm Password
-            </label>
+            <label>Confirm Password</label>
 
             <input
               type="password"
               placeholder="Confirm password"
               value={confirmPassword}
-              onChange={(e) => {
-                setConfirmPassword(e.target.value);
-              }}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={loading}
               autoComplete="new-password"
             />
-
           </div>
 
           {/* BUTTON */}
@@ -329,13 +278,11 @@ function Signup() {
 
         {/* FOOTER */}
         <div className="auth-footer">
-
           Already have an account?{' '}
 
           <Link to="/login">
             Login
           </Link>
-
         </div>
 
       </div>
