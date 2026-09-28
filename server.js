@@ -95,8 +95,9 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/category-test', (req, res) => {
   res.json({
-    success: true,
-    message: 'CATEGORY ROUTE IS WORKING'
+      cloudName: !!process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: !!process.env.CLOUDINARY_API_KEY,
+    apiSecret: !!process.env.CLOUDINARY_API_SECRET,
   });
 });
 // ======================================
