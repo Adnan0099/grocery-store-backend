@@ -92,6 +92,13 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+
+app.get('/api/category-test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'CATEGORY ROUTE IS WORKING'
+  });
+});
 // ======================================
 // API ROUTES
 // ======================================
@@ -130,12 +137,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.get('/api/category-test', (req, res) => {
-  res.json({
-    success: true,
-    message: 'CATEGORY ROUTE IS WORKING'
-  });
-});
+
 
 // ======================================
 // LOCAL SERVER
