@@ -15,52 +15,17 @@ const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
 
+// ======================================
+// CORS
+// ======================================
 
- // ======================================
- // CORS
- // ======================================
-
-const allowedOrigins = [
-  'https://grocery-store-backend-tqu4.vercel.app'
-];
-
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    return callback(new Error('Origin not allowed by CORS'));
-  },
-  methods: [
-    'GET',
-    'POST',
-    'PUT',
-    'PATCH',
-    'DELETE',
-    'OPTIONS'
-  ],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization'
-  ]
-}));
-
-app.options('/{*path}', cors({
-  origin: allowedOrigins,
-  methods: [
-    'GET',
-    'POST',
-    'PUT',
-    'PATCH',
-    'DELETE',
-    'OPTIONS'
-  ],
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization'
-  ]
-}));
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 // ======================================
 // BODY PARSER
@@ -84,26 +49,26 @@ app.use(
 
 let dbConnected = false;
 
-app.use(async (req, res, next) => {
-  try {
-    if (!dbConnected) {
-      await connectDB();
-      dbConnected = true;
+// app.use(async (req, res, next) => {
+//   try {
+//     if (!dbConnected) {
+//       await connectDB();
+//       dbConnected = true;
 
-      console.log('MongoDB connected successfully');
-    }
+//       console.log('MongoDB connected successfully');
+//     }
 
-    next();
-  } catch (error) {
-    console.error('Database connection failed:', error);
+//     next();
+//   } catch (error) {
+//     console.error('Database connection failed:', error);
 
-    return res.status(500).json({
-      success: false,
-      message: 'Database connection failed',
-      error: error.message,
-    });
-  }
-});
+//     return res.status(500).json({
+//       success: false,
+//       message: 'Database connection failed',
+//       error: error.message,
+//     });
+//   }
+// });
 
 // ======================================
 // ROOT TEST
