@@ -15,17 +15,52 @@ const orderRoutes = require('./routes/orderRoutes');
 
 const app = express();
 
-// ======================================
-// CORS
-// ======================================
 
-app.use(
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+ // ======================================
+ // CORS
+ // ======================================
+
+const allowedOrigins = [
+  'https://grocery-store-backend-tqu4.vercel.app'
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Origin not allowed by CORS'));
+  },
+  methods: [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+  ],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization'
+  ]
+}));
+
+app.options('/{*path}', cors({
+  origin: allowedOrigins,
+  methods: [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+  ],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization'
+  ]
+}));
 
 // ======================================
 // BODY PARSER
