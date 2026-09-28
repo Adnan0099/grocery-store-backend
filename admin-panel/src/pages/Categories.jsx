@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
 const API_URL =
-  'https://grocery-store-backend-cyan.vercel.app/api/categories';
+  'https://grocery-store-backend-tqu4.vercel.app/api/categories';
 
 const SERVER_URL =
-  'https://grocery-store-backend-cyan.vercel.app';
+  'https://grocery-store-backend-tqu4.vercel.app';
 
 const emptyForm = {
   name: '',
