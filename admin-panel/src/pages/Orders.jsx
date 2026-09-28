@@ -632,7 +632,7 @@ export default function Orders() {
                           src={
                             item.image.startsWith('http')
                               ? item.image
-                              : `http://localhost:5000/${item.image.replace(
+                              : `https://grocery-store-backend-cyan.vercel.app/${item.image.replace(
                                   /^\/+/,
                                   ''
                                 )}`

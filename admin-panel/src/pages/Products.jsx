@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const API_URL = 'https://grocery-store-backend-cyan.vercel.app/api/products';
-const SERVER_URL = 'http://localhost:5000';
+const SERVER_URL = 'https://grocery-store-backend-cyan.vercel.app';
 
 const emptyForm = {
   name: '',
@@ -82,7 +82,7 @@ function Products() {
   const fetchCategories = async () => {
   try {
     const response = await fetch(
-      'http://localhost:5000/api/categories'
+      'https://grocery-store-backend-cyan.vercel.app/api/categories'
     );
 
     const data = await response.json();
