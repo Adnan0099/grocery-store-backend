@@ -1,7 +1,14 @@
+
 import { useEffect, useState } from 'react';
 
-const API_URL = 'https://grocery-store-backend-cyan.vercel.app/api/products';
-const SERVER_URL = 'https://grocery-store-backend-cyan.vercel.app';
+const SERVER_URL =
+  'https://grocery-store-backend-cyan.vercel.app';
+
+const API_URL =
+  `${SERVER_URL}/api/products`;
+
+const CATEGORY_URL =
+  `${SERVER_URL}/api/categories`;
 
 const emptyForm = {
   name: '',
@@ -26,8 +33,9 @@ function Products() {
 
   const [categories, setCategories] = useState([]);
 
-  // ONLY ONE FORM STATE
-  const [formData, setFormData] = useState(emptyForm);
+  const [formData, setFormData] = useState({
+    ...emptyForm,
+  });
 
   // ========================================
   // GET PRODUCTS
@@ -50,13 +58,53 @@ function Products() {
 
       setProducts(data.products || []);
     } catch (error) {
-      console.error('Fetch Products Error:', error);
+      console.error(
+        'Fetch Products Error:',
+        error
+      );
 
-      setError(error.message || 'Failed to fetch products');
+      setError(
+        error.message ||
+          'Failed to fetch products'
+      );
     } finally {
       setLoading(false);
     }
   };
+
+  // ========================================
+  // GET CATEGORIES
+  // ========================================
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(
+        CATEGORY_URL
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            'Failed to load categories'
+        );
+      }
+
+      setCategories(
+        data.categories || []
+      );
+    } catch (error) {
+      console.error(
+        'Categories Error:',
+        error
+      );
+    }
+  };
+
+  // ========================================
+  // INITIAL LOAD
+  // ========================================
 
   useEffect(() => {
     fetchProducts();
@@ -68,7 +116,10 @@ function Products() {
   // ========================================
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const {
+      name,
+      value,
+    } = e.target;
 
     setFormData((previous) => ({
       ...previous,
@@ -77,36 +128,12 @@ function Products() {
   };
 
   // ========================================
-  // Get Categories
-  // ========================================
-  const fetchCategories = async () => {
-  try {
-    const response = await fetch(
-      'https://grocery-store-backend-cyan.vercel.app/api/categories'
-    );
-
-    const data = await response.json();
-
-    if (response.ok) {
-      setCategories(
-        data.categories || []
-      );
-    }
-
-  } catch (error) {
-    console.error(
-      'Categories Error:',
-      error
-    );
-  }
-};
-
-  // ========================================
   // IMAGE CHANGE
   // ========================================
 
   const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
+    const file =
+      e.target.files?.[0];
 
     if (!file) {
       return;
@@ -118,13 +145,28 @@ function Products() {
       'image/png',
     ];
 
-    if (!allowedTypes.includes(file.type)) {
-      setError('Only JPG, JPEG and PNG images are allowed.');
+    if (
+      !allowedTypes.includes(
+        file.type
+      )
+    ) {
+      setError(
+        'Only JPG, JPEG and PNG images are allowed.'
+      );
+
+      e.target.value = '';
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image size must be less than 5MB.');
+    if (
+      file.size >
+      5 * 1024 * 1024
+    ) {
+      setError(
+        'Image size must be less than 5MB.'
+      );
+
+      e.target.value = '';
       return;
     }
 
@@ -144,13 +186,7 @@ function Products() {
     setEditingProduct(null);
 
     setFormData({
-      name: '',
-      description: '',
-      price: '',
-      category: '',
-      stock: '',
-      image: null,
-      unit: 'piece',
+      ...emptyForm,
     });
 
     setError('');
@@ -161,17 +197,32 @@ function Products() {
   // OPEN EDIT MODAL
   // ========================================
 
-  const openEditModal = (product) => {
+  const openEditModal = (
+    product
+  ) => {
     setEditingProduct(product);
 
     setFormData({
-      name: product.name || '',
-      description: product.description || '',
-      price: product.price ?? '',
-      category: product.category || '',
-      stock: product.stock ?? '',
-      image: product.image || null,
-      unit: product.unit || 'piece',
+      name:
+        product.name || '',
+
+      description:
+        product.description || '',
+
+      price:
+        product.price ?? '',
+
+      category:
+        product.category || '',
+
+      stock:
+        product.stock ?? '',
+
+      image:
+        product.image || null,
+
+      unit:
+        product.unit || 'piece',
     });
 
     setError('');
@@ -183,7 +234,9 @@ function Products() {
   // ========================================
 
   const closeModal = () => {
-    if (saving) return;
+    if (saving) {
+      return;
+    }
 
     setShowModal(false);
     setEditingProduct(null);
@@ -204,9 +257,17 @@ function Products() {
 
     setError('');
 
-    // Frontend validation
-    if (!formData.name.trim()) {
-      setError('Product name is required.');
+    // ======================================
+    // VALIDATION
+    // ======================================
+
+    if (
+      !formData.name.trim()
+    ) {
+      setError(
+        'Product name is required.'
+      );
+
       return;
     }
 
@@ -214,26 +275,46 @@ function Products() {
       formData.price === '' ||
       Number(formData.price) < 0
     ) {
-      setError('Valid product price is required.');
+      setError(
+        'Valid product price is required.'
+      );
+
       return;
     }
 
-    if (!formData.category.trim()) {
-      setError('Product category is required.');
+    if (
+      !formData.category.trim()
+    ) {
+      setError(
+        'Product category is required.'
+      );
+
       return;
     }
 
-    // Image required only when adding
-    if (!editingProduct && !formData.image) {
-      setError('Product image is required.');
+    // Image required when adding
+    if (
+      !editingProduct &&
+      !formData.image
+    ) {
+      setError(
+        'Product image is required.'
+      );
+
       return;
     }
 
     try {
       setSaving(true);
 
+      // ======================================
+      // ADMIN TOKEN
+      // ======================================
+
       const token =
-        localStorage.getItem('adminToken');
+        localStorage.getItem(
+          'adminToken'
+        );
 
       if (!token) {
         throw new Error(
@@ -241,11 +322,12 @@ function Products() {
         );
       }
 
-      // ========================================
+      // ======================================
       // FORM DATA
-      // ========================================
+      // ======================================
 
-      const uploadData = new FormData();
+      const uploadData =
+        new FormData();
 
       uploadData.append(
         'name',
@@ -269,72 +351,70 @@ function Products() {
 
       uploadData.append(
         'stock',
-        String(formData.stock || 0)
+        String(
+          formData.stock || 0
+        )
       );
 
       uploadData.append(
         'unit',
-        formData.unit || 'piece'
+        formData.unit ||
+          'piece'
       );
 
-      // Only append image if a NEW file is selected
-      if (formData.image instanceof File) {
+      // ======================================
+      // IMAGE
+      // ======================================
+
+      if (
+        formData.image instanceof
+        File
+      ) {
         uploadData.append(
           'image',
           formData.image
         );
       }
 
-      // ========================================
-      // DEBUG
-      // ========================================
+      // ======================================
+      // URL
+      // ======================================
 
-      console.log(
-        '========== PRODUCT SUBMIT =========='
-      );
+      const url =
+        editingProduct
+          ? `${API_URL}/${editingProduct._id}`
+          : API_URL;
 
-      for (const [key, value] of uploadData.entries()) {
-        console.log(
-          key,
-          value instanceof File
-            ? value.name
-            : value
-        );
-      }
+      const method =
+        editingProduct
+          ? 'PUT'
+          : 'POST';
 
-      console.log(
-        '===================================='
-      );
-
-      // ========================================
-      // ADD / EDIT URL
-      // ========================================
-
-      const url = editingProduct
-        ? `${API_URL}/${editingProduct._id}`
-        : API_URL;
-
-      const method = editingProduct
-        ? 'PUT'
-        : 'POST';
-
-      // ========================================
+      // ======================================
       // API REQUEST
-      // ========================================
+      // ======================================
 
-      const response = await fetch(url, {
-        method,
+      const response =
+        await fetch(url, {
+          method,
 
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
 
-        // IMPORTANT:
-        // Do NOT add Content-Type manually
-        body: uploadData,
-      });
+          // DO NOT set Content-Type.
+          // Browser will automatically
+          // set multipart/form-data boundary.
+          body: uploadData,
+        });
 
-      const result = await response.json();
+      // ======================================
+      // SERVER RESPONSE
+      // ======================================
+
+      const result =
+        await response.json();
 
       console.log(
         'SERVER RESPONSE:',
@@ -352,9 +432,9 @@ function Products() {
         );
       }
 
-      // ========================================
+      // ======================================
       // SUCCESS
-      // ========================================
+      // ======================================
 
       alert(
         editingProduct
@@ -390,18 +470,25 @@ function Products() {
   // DELETE PRODUCT
   // ========================================
 
-  const deleteProduct = async (id) => {
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this product?'
-    );
+  const deleteProduct = async (
+    id
+  ) => {
+    const confirmed =
+      window.confirm(
+        'Are you sure you want to delete this product?'
+      );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
     try {
       setError('');
 
       const token =
-        localStorage.getItem('adminToken');
+        localStorage.getItem(
+          'adminToken'
+        );
 
       if (!token) {
         throw new Error(
@@ -409,18 +496,21 @@ function Products() {
         );
       }
 
-      const response = await fetch(
-        `${API_URL}/${id}`,
-        {
-          method: 'DELETE',
+      const response =
+        await fetch(
+          `${API_URL}/${id}`,
+          {
+            method: 'DELETE',
 
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+            },
+          }
+        );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -453,19 +543,25 @@ function Products() {
       return null;
     }
 
-    // New uploaded file
-    if (formData.image instanceof File) {
+    // New local file
+    if (
+      formData.image instanceof
+      File
+    ) {
       return URL.createObjectURL(
         formData.image
       );
     }
 
-    // Existing server image
+    // Cloudinary URL
     if (
-      typeof formData.image === 'string'
+      typeof formData.image ===
+      'string'
     ) {
       if (
-        formData.image.startsWith('http')
+        formData.image.startsWith(
+          'http'
+        )
       ) {
         return formData.image;
       }
@@ -486,14 +582,14 @@ function Products() {
   return (
     <div className="products-page">
 
-      {/* =====================================
-          HEADER
-      ===================================== */}
+      {/* HEADER */}
 
       <div className="page-heading">
 
         <div>
-          <h2>Products</h2>
+          <h2>
+            Products
+          </h2>
 
           <p>
             Manage your grocery products and inventory.
@@ -502,16 +598,16 @@ function Products() {
 
         <button
           className="primary-button"
-          onClick={openAddModal}
+          onClick={
+            openAddModal
+          }
         >
           + Add Product
         </button>
 
       </div>
 
-      {/* =====================================
-          ERROR
-      ===================================== */}
+      {/* ERROR */}
 
       {error && (
         <div className="products-error">
@@ -519,14 +615,14 @@ function Products() {
         </div>
       )}
 
-      {/* =====================================
-          STATS
-      ===================================== */}
+      {/* STATS */}
 
       <div className="product-mini-stats">
 
         <div>
-          <span>Total Products</span>
+          <span>
+            Total Products
+          </span>
 
           <strong>
             {products.length}
@@ -534,26 +630,34 @@ function Products() {
         </div>
 
         <div>
-          <span>In Stock</span>
+          <span>
+            In Stock
+          </span>
 
           <strong>
             {
               products.filter(
                 (product) =>
-                  Number(product.stock) > 0
+                  Number(
+                    product.stock
+                  ) > 0
               ).length
             }
           </strong>
         </div>
 
         <div>
-          <span>Out of Stock</span>
+          <span>
+            Out of Stock
+          </span>
 
           <strong>
             {
               products.filter(
                 (product) =>
-                  Number(product.stock) === 0
+                  Number(
+                    product.stock
+                  ) === 0
               ).length
             }
           </strong>
@@ -561,9 +665,7 @@ function Products() {
 
       </div>
 
-      {/* =====================================
-          PRODUCTS TABLE
-      ===================================== */}
+      {/* PRODUCTS TABLE */}
 
       <div className="products-card">
 
@@ -573,13 +675,18 @@ function Products() {
             Loading products...
           </div>
 
-        ) : products.length === 0 ? (
+        ) : products.length ===
+          0 ? (
 
           <div className="products-empty">
 
-            <div>🛍️</div>
+            <div>
+              🛍️
+            </div>
 
-            <h3>No Products Yet</h3>
+            <h3>
+              No Products Yet
+            </h3>
 
             <p>
               Add your first grocery product.
@@ -587,7 +694,9 @@ function Products() {
 
             <button
               className="primary-button"
-              onClick={openAddModal}
+              onClick={
+                openAddModal
+              }
             >
               + Add Product
             </button>
@@ -601,14 +710,33 @@ function Products() {
             <table>
 
               <thead>
+
                 <tr>
-                  <th>PRODUCT</th>
-                  <th>CATEGORY</th>
-                  <th>PRICE</th>
-                  <th>STOCK</th>
-                  <th>STATUS</th>
-                  <th>ACTION</th>
+                  <th>
+                    PRODUCT
+                  </th>
+
+                  <th>
+                    CATEGORY
+                  </th>
+
+                  <th>
+                    PRICE
+                  </th>
+
+                  <th>
+                    STOCK
+                  </th>
+
+                  <th>
+                    STATUS
+                  </th>
+
+                  <th>
+                    ACTION
+                  </th>
                 </tr>
+
               </thead>
 
               <tbody>
@@ -617,7 +745,9 @@ function Products() {
                   (product) => (
 
                     <tr
-                      key={product._id}
+                      key={
+                        product._id
+                      }
                     >
 
                       {/* PRODUCT */}
@@ -656,11 +786,15 @@ function Products() {
                           <div>
 
                             <strong>
-                              {product.name}
+                              {
+                                product.name
+                              }
                             </strong>
 
                             <small>
-                              {product.unit}
+                              {
+                                product.unit
+                              }
                             </small>
 
                           </div>
@@ -672,7 +806,9 @@ function Products() {
                       {/* CATEGORY */}
 
                       <td>
-                        {product.category}
+                        {
+                          product.category
+                        }
                       </td>
 
                       {/* PRICE */}
@@ -681,7 +817,9 @@ function Products() {
 
                         <strong>
                           Rs.{' '}
-                          {product.price}
+                          {
+                            product.price
+                          }
                         </strong>
 
                       </td>
@@ -689,7 +827,9 @@ function Products() {
                       {/* STOCK */}
 
                       <td>
-                        {product.stock}
+                        {
+                          product.stock
+                        }
                       </td>
 
                       {/* STATUS */}
@@ -705,13 +845,13 @@ function Products() {
                               : 'stock-badge out-stock'
                           }
                         >
-
-                          {Number(
-                            product.stock
-                          ) > 0
-                            ? 'In Stock'
-                            : 'Out of Stock'}
-
+                          {
+                            Number(
+                              product.stock
+                            ) > 0
+                              ? 'In Stock'
+                              : 'Out of Stock'
+                          }
                         </span>
 
                       </td>
@@ -767,9 +907,7 @@ function Products() {
 
       </div>
 
-      {/* =====================================
-          MODAL
-      ===================================== */}
+      {/* MODAL */}
 
       {showModal && (
 
@@ -784,9 +922,11 @@ function Products() {
               <div>
 
                 <h2>
-                  {editingProduct
-                    ? 'Edit Product'
-                    : 'Add Product'}
+                  {
+                    editingProduct
+                      ? 'Edit Product'
+                      : 'Add Product'
+                  }
                 </h2>
 
                 <p>
@@ -798,7 +938,9 @@ function Products() {
               <button
                 type="button"
                 className="modal-close"
-                onClick={closeModal}
+                onClick={
+                  closeModal
+                }
               >
                 ×
               </button>
@@ -808,7 +950,9 @@ function Products() {
             {/* FORM */}
 
             <form
-              onSubmit={handleSubmit}
+              onSubmit={
+                handleSubmit
+              }
             >
 
               <div className="form-grid">
@@ -824,8 +968,12 @@ function Products() {
                   <input
                     type="text"
                     name="name"
-                    value={formData.name}
-                    onChange={handleChange}
+                    value={
+                      formData.name
+                    }
+                    onChange={
+                      handleChange
+                    }
                     placeholder="Enter product name"
                     autoComplete="off"
                   />
@@ -843,8 +991,12 @@ function Products() {
                   <input
                     type="number"
                     name="price"
-                    value={formData.price}
-                    onChange={handleChange}
+                    value={
+                      formData.price
+                    }
+                    onChange={
+                      handleChange
+                    }
                     placeholder="Enter price"
                     min="0"
                   />
@@ -862,8 +1014,12 @@ function Products() {
                   <input
                     type="number"
                     name="stock"
-                    value={formData.stock}
-                    onChange={handleChange}
+                    value={
+                      formData.stock
+                    }
+                    onChange={
+                      handleChange
+                    }
                     placeholder="Enter stock"
                     min="0"
                   />
@@ -879,28 +1035,45 @@ function Products() {
                   </label>
 
                   <select
-  name="category"
-  value={formData.category}
-  onChange={handleChange}
->
-  <option value="">
-    Select Category
-  </option>
+                    name="category"
+                    value={
+                      formData.category
+                    }
+                    onChange={
+                      handleChange
+                    }
+                  >
 
-  {categories
-    .filter(
-      (category) =>
-        category.isActive !== false
-    )
-    .map((category) => (
-      <option
-        key={category._id}
-        value={category.name}
-      >
-        {category.name}
-      </option>
-    ))}
-</select>
+                    <option value="">
+                      Select Category
+                    </option>
+
+                    {categories
+                      .filter(
+                        (category) =>
+                          category.isActive !==
+                          false
+                      )
+                      .map(
+                        (category) => (
+
+                          <option
+                            key={
+                              category._id
+                            }
+                            value={
+                              category.name
+                            }
+                          >
+                            {
+                              category.name
+                            }
+                          </option>
+
+                        )
+                      )}
+
+                  </select>
 
                 </div>
 
@@ -914,8 +1087,12 @@ function Products() {
 
                   <select
                     name="unit"
-                    value={formData.unit}
-                    onChange={handleChange}
+                    value={
+                      formData.unit
+                    }
+                    onChange={
+                      handleChange
+                    }
                   >
 
                     <option value="piece">
@@ -952,7 +1129,8 @@ function Products() {
 
                   <label>
                     Product Image
-                    {!editingProduct && ' *'}
+                    {!editingProduct &&
+                      ' *'}
                   </label>
 
                   <input
@@ -963,22 +1141,24 @@ function Products() {
                     }
                   />
 
-                  {/* IMAGE PREVIEW */}
-
                   {imagePreview && (
 
                     <div className="image-preview">
 
                       <img
-                        src={imagePreview}
+                        src={
+                          imagePreview
+                        }
                         alt="Product Preview"
                       />
 
                       <p>
-                        {formData.image instanceof
-                        File
-                          ? formData.image.name
-                          : 'Current product image'}
+                        {
+                          formData.image instanceof
+                          File
+                            ? formData.image.name
+                            : 'Current product image'
+                        }
                       </p>
 
                     </div>
@@ -1028,8 +1208,12 @@ function Products() {
                 <button
                   type="button"
                   className="cancel-button"
-                  onClick={closeModal}
-                  disabled={saving}
+                  onClick={
+                    closeModal
+                  }
+                  disabled={
+                    saving
+                  }
                 >
                   Cancel
                 </button>
@@ -1037,14 +1221,18 @@ function Products() {
                 <button
                   type="submit"
                   className="save-button"
-                  disabled={saving}
+                  disabled={
+                    saving
+                  }
                 >
 
-                  {saving
-                    ? 'Saving...'
-                    : editingProduct
-                    ? 'Update Product'
-                    : 'Add Product'}
+                  {
+                    saving
+                      ? 'Saving...'
+                      : editingProduct
+                      ? 'Update Product'
+                      : 'Add Product'
+                  }
 
                 </button>
 
